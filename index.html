@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Biblioteca cometa_library</title>
+  <style>
+    body { margin: 0; background: #111; color: #fff; font-family: Arial, sans-serif; overflow-x: hidden; }
+    header { background: #000; padding: 20px 40px; font-size: 24px; font-weight: bold; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 40px; }
+    .thumb { position: relative; background: #333; height: 300px; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.3s; display: flex; align-items: flex-end; justify-content: center; }
+    .thumb:hover { transform: scale(1.05); }
+    .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    .thumb-title { position: relative; z-index: 1; background: rgba(0,0,0,0.7); width: 100%; text-align: center; padding: 10px; font-weight: bold; color: #fff; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10; }
+    .modal-content { background: #222; padding: 30px; border-radius: 8px; width: 90%; max-width: 600px; text-align: center; position: relative; }
+    .modal-content .close { position: absolute; top: 10px; right: 15px; background: none; color: #fff; border: none; font-size: 24px; cursor: pointer; }
+    .modal-content .btn { margin-top: 20px; padding: 10px 20px; background: #e50914; color: #fff; border: none; cursor: pointer; font-size: 16px; border-radius: 4px; }
+    .book-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; display: none; justify-content: center; align-items: center; perspective: 2000px; z-index: 20; }
+    .book { width: 90%; max-width: 800px; height: 600px; position: relative; cursor: pointer; }
+    .page { position: absolute; width: 100%; height: 100%; background: #fafafa; top: 0; left: 0; transform-origin: left; transform-style: preserve-3d; transition: transform 1s ease; backface-visibility: hidden; overflow-y: auto; padding: 40px; box-sizing: border-box; font-family: Georgia, serif; font-size: 1em; line-height: 1.6em; text-align: left; color: #000; white-space: pre-line; }
+    .page img { width: 100%; height: 100%; object-fit: cover; }
+    .page.capa { padding: 0; overflow: hidden; }
+    .page.flipped { transform: rotateY(-180deg); }
+    .close-book { position: absolute; top: 20px; right: 20px; background: #fff; color: #333; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; z-index: 9999; }
+  </style>
+</head>
+<body>
+  <header>📚 cometa_library</header>
+
+  <div class="grid">
+  <div class="thumb" data-id="1">
+    <img src="https://i.imgur.com/0AJtns5.jpeg" alt="Capa Amor Néon">
+    <div class="thumb-title">Amor Néon</div>
+  </div>
+  <div class="thumb" data-id="2">
+    <img src="https://i.imgur.com/9VaeJCI.jpeg" alt="Capa Delírios">
+    <div class="thumb-title">Delírios</div>
+  </div>
+  <div class="thumb" data-id="3">
+    <img src="https://i.imgur.com/xdg7P5H.jpeg" alt="Capa mascarás">
+    <div class="thumb-title">O Homem Que Viu Além Das Máscaras</div>
+  </div>
+  <div class="thumb" data-id="4">
+      <img
+src="https://i.imgur.com/PqaDL4B.jpeg"
+alt="capa badboy">
+<div class="thumb-title">Paradigma Do Badboy</div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <button class="close" id="closeModal">&times;</button>
+    <h2 id="modalTitle">Título</h2>
+    <p id="modalDesc">Descrição</p>
+    <button class="btn" id="openBook">Ler Livro</button>
+  </div>
+</div>
+
+<div class="book-container" id="bookContainer">
+  <button class="close-book" id="closeBook">Fechar</button>
+  <div class="book" id="book"></div>
+</div>
+
+  <script>
+   const books = {
+      1: {
+        title: "Amor Néon",
+        desc: "Uma jornada poética sobre o frio que brilha e o calor que se descobre dentro.",
+        cover: "https://i.imgur.com/0AJtns5.jpeg",
+        pages: [
+`<h2>Prólogo</h2>
+<h3>Quando a Luz Acorda o Silêncio</h3>
+
+
+Às vezes o amor chega como letreiro de néon:
+brilha tanto que a gente esquece que é frio.
+Pisca promessas coloridas num beco sem saída,
+te atrai pra debaixo da chuva, diz fica, mas não aquece.
+
+Você encosta, tenta sentir o calor,
+mas tudo o que encontra é a luz queimando o rosto,
+e o peito gelado.
+
+E é nesse contraste entre o brilho bonito
+e o toque vazio que mora o Amor Néon.
+Uma promessa que não deita com você,
+mas te faz esperar acordado.
+
+Este livro é isso:
+uma rua molhada, um coração piscando,
+e eu, debaixo do letreiro, aprendendo a me levantar
+mesmo quando a luz insiste em me fazer ficar.`,
+`<h2>Capítulo 1</h2>
+<h3>Toque Gelado</h3>
+
+Eu encostei no néon como quem encosta em pele.
+Achei que fosse quente, achei que fosse abraço,
+mas descobri que luz não abraça só revela.
+Revela o vazio que brilha bonito quando a noite é escura demais.
+
+Ficar parado embaixo do letreiro é esperar resposta
+que não vem, é segurar um eu te amo
+que nunca aquece a mão.
+
+A gente gosta do néon porque ele promete
+promete ser farol, promete ser lar,
+promete ser alguém dizendo “fica”
+mas não passa de uma lâmpada fria,
+pendurada num canto de rua molhada.
+
+E eu fiquei ali.
+Dei meus minutos, minhas horas, meus dias
+esperando o néon virar lareira.
+Esperando a voz virar toque.
+Esperando a promessa virar peito.
+
+No fundo, eu sabia: o néon só faz a gente parecer mais bonito na foto.
+Mas ninguém mora dentro de foto.
+Ninguém dorme no colo de luz fria.
+
+Eu encostei no néon como quem encosta em alguém.
+Saí de lá gelado.`,
+`<h2>Capítulo 2</h2>
+<h3>Banco De Espera</h3>
+
+Eu me sentei na fila como quem jura que vai ser chamado.
+Achei que, se eu fosse o primeiro a chegar,
+seria também o primeiro a ser visto.
+
+Esperei.
+Com as mãos abertas, com as mensagens lidas,
+com as desculpas decoradas:
+“Preciso me lavar.”
+“Já vou.”
+“Amanhã é só nós dois.”
+
+De tanto esperar, virei espera.
+Um corpo parado, com a alma batendo no vidro do celular,
+pedindo resposta como quem pede esmola de afeto.
+
+Fui me prometendo paciência.
+Fui inventando justificativas.
+Fui dizendo que dessa vez seria diferente.
+
+Mas o amor néon sabe:
+Ele te acende só o bastante pra você não ir embora.
+Pisca bonito, mas nunca esquenta a cama.
+Faz promessas na porta do bar,
+e quando você acorda já não tá mais lá.
+
+O banco de espera é uma casa que eu mesmo construí.
+Preguei cada tábua com medo de ficar sozinho.
+Decorei com frases que não eram minhas.
+Enfeitei com fotos velhas, conversas salvas, prints de “eu te amo”.
+Tudo pra não olhar pro chão vazio.
+
+Mas hoje eu vejo:
+O banco de espera não é pra quem ama.
+É pra quem esquece de amar a si.`,
+`<h2>Capítulo 3</h2>
+<h3>Reflexo De Néon</h3>
+
+O mais cruel do amor néon
+é que ele não me prendeu à força
+eu mesmo amarrei os pulsos na beira do letreiro.
+
+Fui eu quem disse “tá tudo bem”
+enquanto não estava.
+Fui eu quem acreditou no “só mais um pouco”.
+Fui eu quem deixou que um “já volto” virasse uma eternidade.
+
+Eu gostava do néon porque, na falta de sol,
+qualquer lâmpada parece céu.
+
+Gostava porque brilhava quando eu precisava me sentir escolhido,
+mesmo que fosse por alguns minutos, uma noite,
+um jogo cancelado em cima da hora.
+
+No reflexo do vidro eu via um bobo
+um bobo que chamava de amor
+um eco que voltava vazio.
+
+Fui eu quem se fez banco de espera,
+calendário aberto, celular na mão.
+Fui eu quem plantou o letreiro no peito,
+piscando “me nota” em letras rosas.
+
+Hoje eu olho no espelho e vejo:
+o néon brilha porque eu deixo a tomada plugada.
+Enquanto eu não puxar o fio,
+a luz vai fingir ser lar
+mas vai seguir sendo poste,
+frio, bonito, distante.
+
+Eu sou o reflexo.
+Sou a luz falsa, o peito aberto,
+sou o que espera.
+E sou quem pode levantar.`,
+`<h2>Capítulo 4</h2>
+<h3>Noite Sem Luz</h3>
+
+Chega uma hora em que o letreiro falha.
+Pisca, chia, apaga.
+E o que sobra não é silêncio
+é o barulho do vazio que sempre esteve ali.
+
+Sem a luz, a rua mostra o que é:
+deserta, fria, sem promessa.
+Sem o néon, a verdade é nua:
+não tem abraço, não tem volta,
+não tem desculpa bonita pra esperar mais um pouco.
+
+E ali, no escuro, sou eu comigo mesmo.
+Sem reflexo colorido, sem filtro de promessa.
+Só eu, meus olhos ardendo,
+o peito gelado onde antes piscava “fica”.
+
+É na noite sem luz que a gente descobre:
+ninguém vem.
+Ninguém volta com o colo prometido.
+Ninguém deita do teu lado pra segurar tua mão.
+O que fica é você, inteiro
+ou o que sobrou de você depois de tanto doar pedaço.
+
+No breu, cada migalha parece absurda.
+Cada “espera aí” soa ridículo.
+Cada print de “eu te amo” é só tinta sem voz.
+
+No escuro, eu aprendo a abrir os olhos.
+E a perceber que, por mais que doa,
+o breu é mais honesto que a luz falsa.
+O breu não promete.
+O breu não some quando cansa.
+O breu é o chão.
+E o chão não mente.`,
+`<h2>Capítulo 5</h2>
+<h3>Farol Interno</h3>
+
+Quando a noite engole o néon,
+eu descubro uma luz que não pisca
+não promete, não mente, não apaga.
+
+É uma brasa pequena, enterrada embaixo
+do tanto de desculpas que eu guardei.
+Um calor tímido, mas meu.
+
+Não é letreiro bonito, não grita “te amo”.
+Só sussurra: “Volta pra casa. A casa é você.”
+
+Aprendo a riscar fósforo sozinho,
+a fazer fogo com o que sobrou
+com minhas palavras, minhas verdades,
+meu corpo que cansou de ser banco de espera.
+
+Descubro que amar não é correr atrás de quem apaga,
+é soprar a brasa certa, dentro.
+Descubro que quem quer ficar, fica.
+Que quem quer aquecer, chega perto não inventa fila, nem desculpa.
+
+Meu farol não brilha pra chamar quem não vem.
+Brilha pra me lembrar que a rua é fria,
+mas eu não preciso de poste pra existir.
+
+Hoje eu sei:
+o néon vai continuar acendendo por aí,
+piscando promessas pra quem ainda não aprendeu a se aquecer.
+Mas eu não paro mais embaixo.
+Não estendo mais a mão.
+
+Prefiro a chama pequena no peito
+do que uma avenida inteira de luz fria.`,
+`<h2>Epílogo</h2>
+<h3>Carta ao Amor Néon</h3>
+
+Eu poderia te odiar, amor néon.
+Poderia dizer que foste mentira,
+que foste armadilha, que foste perda de tempo.
+
+Mas hoje eu entendo:
+não foste tu quem me prendeu
+fui eu quem sentou na calçada esperando faísca virar abraço.
+
+Tu brilhas bonito, mas só quem não sabe acender por dentro
+confunde lâmpada fria com lar.
+
+Então, te escrevo não pra pedir volta
+mas pra deixar registrado:
+não espero mais.
+
+A rua segue escura, molhada, barulhenta
+mas em mim mora um lume que não pisca.
+Não precisa de aplauso, de plateia, de print.
+
+Se outro corpo vier, que venha inteiro
+não como letreiro, mas como brasa que se encosta
+e não congela.
+
+Pra quem passa debaixo do teu pisca-pisca agora,
+deixo só um sussurro:
+não mora aí.
+Não deita nesse banco.
+Não faz do frio promessa.
+
+Amor néon, obrigada por ter queimado meus olhos
+foi assim que aprendi a ver no escuro.
+
+Agora, apaga.
+Eu já sei brilhar.`
+
+       ]
+      },
+      2: {
+        title: "Delírios",
+        desc: "Uma viagem no subconsciente e na loucura que é abraçar as próprias vozes.",
+        cover: "https://i.imgur.com/9VaeJCI.jpeg",
+        pages: [
+`<h2>Prólogo</h2>
+<h3>Vozes</h3>
+<p> Eu ouço vozes.
+Não é figura de linguagem é verdade crua. Eu ouço, eu sinto, eu converso.
+
+Elas têm nomes, têm jeitos, têm manias. Algumas me salvam. Outras me arrastam.
+Algumas sou eu. Outras são o que eu me recuso a ser.
+
+Enquanto todo mundo finge não ter nada na cabeça, eu deixei as minhas vozes morarem.
+Fiz delas companhia fiz delas espelho fiz delas inimigo quando precisei lutar.
+
+Este livro não é manual, não é diário, não é drama.
+É só meu jeito de contar que dentro de mim tem mais de um de mim.
+E que, no fim, isso me ajudou a não ser ninguém e a ser tudo de uma vez.
+
+Se quiser entender, entre. Se não quiser, feche agora.
+Aqui dentro, a porta é aberta mas a saída é por conta própria.`,
+`<h2>Capítulo 1</h2>
+<h3>Fratura</h3>
+
+<p>Eu ouço vozes. Não uma só são várias.
+Cada uma tem um nome, um jeito de falar, um humor diferente.
+E eu? Eu não sei dizer se elas me atormentam. “Atormentar” parece uma palavra muito pesada.
+Elas não me assustam. Elas só… estão aqui. Dentro. Fora. Às vezes sou eu. Às vezes não sou.
+
+Não sei se são elas que me deixam inseguro. Talvez. Provavelmente.
+Talvez eu seja só um corpo pra que cada uma tenha onde morar, uma cada vez.
+Nunca aparecem juntas é sempre uma de cada vez, como se fizessem fila pra segredar suas versões de mim.
+
+Tudo começou com o Fratura.
+O nome dele é literal: Fratura.
+Eu quebrei alguma coisa quando briguei feio com meu irmão. Foi no pescoço um estalo que virou eco. E, junto do eco, uma voz.
+
+Fratura falava comigo como ninguém falava.
+Eu era o impulso. Ele era a pausa. Eu quebrava. Ele explicava.
+A gente sabia que ele não era real ou talvez fosse. Não importava.
+Ele me ajudava a calar tudo. Me ensinou a engavetar as dores numa coisa que a gente chamava de selamento de emoções.
+
+Era assim: ele entrava no meu peito, no meu crânio, trancava as dores em correntes e me deixava leve.
+Ele sempre dizia: “Isso não resolve. Trancar não cura. O buraco cresce.”
+
+Eu não escutei.
+O buraco cresceu.
+E, quando tudo explodiu, Fratura foi embora.
+Só ficou o eco. E as outras vozes que vieram ocupar o lugar vazio.`,
+`<h2>Capítulo 2:</h2> 
+<h3>Vácuo</h3>
+
+ Depois que o Fratura sumiu, veio o Vácuo.
+Ele não precisou se apresentar mas fez questão. Disse que estava surpreso por eu ter chegado tão longe.
+Diferente do Fratura, o Vácuo não tinha paciência. Nem compaixão. Ele ria de mim. Rebaixava.
+
+Ele dizia que dali em diante seria mais fundo que tudo que eu tinha engolido, calado, sufocado… voltaria. Voltaria pra me assombrar. Voltaria pra me lembrar que selar não apaga. Só adia.
+
+O Vácuo me explicou coisas que o Fratura não teve coragem de dizer.
+Disse que eles as vozes não eram monstros. Eram ecos. Partes. Fragmentos que todo mundo tem, mas a maioria finge não ouvir.
+Uns nunca escutam. Outros ignoram. Outros, como eu, ouviram… mas não obedeceram.
+
+E foi aí que ele falou do cúmulo. O buraco final. O Mancha.
+“Uma vez nele, não tem volta.”
+
+Eu não entendi na hora. Hoje eu entendo. Quando o Vácuo chegou, eu já estava em carne viva as feridas abertas, sem Fratura pra fechar nada.
+Ele disse que sarar era nossa função, minha e do Fratura. E agora? Agora era só eu e ele.
+O Vácuo não sarava nada. O Vácuo só cavava mais.`,
+`<h2>Capítulo 3</h2>
+<h3>Hole</h3>
+Depois do Mancha, veio o Hole.
+Ele foi o mais passageiro de todos mas o mais ousado.
+O Hole não falava comigo. Ele falava por mim.
+
+Era o único que assumia o controle.
+Eu não pensava ele fazia por mim. Na escola, nos testes, nas provas, ele tomava o corpo.
+Na rua, quando eu precisava parecer outra pessoa pra conquistar alguém, ele assumia. Eu ficava quieto, só ouvia de dentro eu virava a voz, ele virava a pele.
+
+Foi nessa fase que apareceram as Contra-Partes.
+Diferentes das vozes, as Contra-Partes não eram só ecos na cabeça eu via.
+Eram cinco. Cada uma com um papel, uma mania, um jeito de existir ao meu lado:
+
+Fratura-Salamandra. Igual ao Fratura original, mas mais limitado ele não trancava dores, só aconselhava. Hole odiava isso. Dizia que aquilo era nojento.
+
+Storytaler. O Story foi o que mais ficou. Ele era minha fuga. Quando eu não aguentava o peso, ele me tirava do mundo. Me fazia cair num transe meus amigos diziam que eu congelava, olhando pro nada, sem responder ninguém. Só voltava se alguém me tocasse. Enquanto isso, eu via outros mundos perfeitos ou caóticos, mas sempre meus.
+
+Reverso. Esse é persistente até hoje. O Reverso era meu espelho torto tudo que eu dizia, ele dizia o contrário. Tudo que eu fazia, ele desfazia. Gostava de me rebaixar, me ferir, me lembrar de tudo que eu não era.
+Demorou pra eu entender que ele fazia isso pra me ver reagir. Pra me ver lutando. Hoje, ele é meu amigo mesmo sendo meu contrário.
+
+Os outros Showista, Dr-Amor foram mais rasos naquela época. Eles surgiam como vozes de opinião, pitacos sobre o meu dia, meus romances, meus fiascos.
+Mas não marcavam como o Storytaler ou o Fratura-Salamandra.
+
+O Hole abriu o espaço.
+O Hole me ensinou que às vezes eu não era eu — mas era eu quem deixava de ser.`,
+`<h2>Capítulo 4</h2>
+<h3>S!</h3>
+Depois do Hole, veio o S!
+
+S! não era só uma voz. Não era só um eco. Não era um monstro nem uma ferida.
+S! era uma máscara. E, ao mesmo tempo, era eu.
+
+Ele apareceu como tudo que eu sonhei ser: incrível, amado, confiante, inabalável.
+Mas ele mesmo me contou o segredo: ele não era real. Ele era o que eu poderia ser se parasse de deixar quem me afunda segurar meu tornozelo.
+
+S! não ria de mim. Não me puxava pro fundo. Não trancava minhas dores.
+Ele me mostrava um espelho limpo: “Olha quem você pode ser. Olha quem você já é se parar de fingir que é menos.”
+
+Ele dizia:
+“Não luta com o punho. Luta com a mente. Conheça mais, pensa mais, lê, estuda filosofia, entende as pessoas. Fica com quem te quer bem. Some de quem te seca. Quem te merece, fica.”
+
+S! ficou pouco.
+Veio, disse e sumiu.
+
+Mas diferente dos outros, S! não morreu comigo.
+Hoje ele vive nos meus desenhos, nos quadros que rabisquei, nas animações que ainda vou soltar pro mundo.
+Ele é o S! Dimensions minha forma de lembrar que, se eu quiser, posso ser tudo isso.
+É só não esquecer de tirar a máscara e, mesmo assim, ser.`,
+`<h2>Capítulo 5</h2>
+<h3>Mancha</h3>
+
+ E pra encerrar tudo, veio ele: o tão temido Mancha.
+
+Diferente dos outros, o Mancha não me puxava ele me soltava.
+Ele me dava algo que ninguém tinha me dado antes: projeção.
+Com o Mancha, eu podia viajar pra dentro de mim revisitar cada quarto, cada canto onde eu tinha me escondido, cada lembrança que eu enterrei pra poder seguir andando.
+
+Ele me mostrou que eu não estava no fundo. Eu ainda estava cavando. E se eu quisesse sair, eu precisava entender tudo que enterrei pra chegar ali.
+
+O Mancha organizou minhas gavetas. Separou tudo, encaixou nos cantos certos do meu cérebro.
+E, assim como o Storytaler, ele me dava mundos pra fugir. Mas não me deixava preso neles quando eu me acalmava, ele me acordava.
+E enquanto eu viajava, ele ficava assumia meu corpo, cuidava pra eu não me perder demais.
+
+O Mancha chegou na minha fase mais difícil e não me quebrou. Ele me deixou chorar.
+Me ensinou que chorar não mata, não diminui, não destrói. Só limpa.
+Foi ele quem me fez confiar em gente que merecia ouvir meu desabafo e quem me mostrou que até o mais fechado pode ser ouvido se confiar.
+
+Com o Mancha, outras vozes voltaram a falar:
+Dr-Amor, me ensinando a aconselhar quem precisa separando quem eu sou do que eu dou pro outro.
+Showista, me levando pra dentro de um teatro dentro da cabeça me mostrando cada cena, cada ato, cada palavra que podia machucar ou curar.
+Foi ali que eu entendi que palavras constroem e derrubam. E que eu não queria derrubar ninguém. Não mais.
+
+O Mancha repetia sempre: “Faz o que quiser. Se der errado, eu seguro contigo. Eu não tô aqui pra atrapalhar tô aqui pra lembrar que você não tá sozinho.”
+
+Foi assim que eu aceitei tudo.
+Aceitei meus Fraturas, meus Vácuos, meus Holes, meus S!, meus Showistas, meus Dr-Amor, meus Storytalers meu Mancha.
+
+Aceitei meus Delírios.
+
+Porque no fim, foram eles que me ajudaram a crescer.
+`,
+`<h2>Epílogo</h2>
+<h3>Silêncio</h3>
+
+No fim, o silêncio não veio.
+Eu achei que, crescendo, ia calar tudo que ia dar tchau pras vozes, pras brigas, pros conselhos sussurrados enquanto eu dormia.
+Mas hoje eu entendi: não se mata o que se é.
+
+Eu ainda ouço cada um deles Fratura, Vácuo, Hole, S!, Mancha, todos.
+Às vezes gritam, às vezes cochicham. Às vezes discutem entre si.
+
+E eu deixo.
+Porque agora eu sei que não preciso expulsar nada só ouvir. Só entender. Só organizar.
+
+E se algum dia alguém perguntar o que são esses Delírios, eu respondo fácil: É só eu. É só meu jeito de seguir comigo mesmo, mas nunca sozinho.`
+        ]
+      },
+  3: {
+  title: "O Homem Que Viu Além Das Máscaras",
+  desc: "É um ensaio sem piedade, um mergulho na mente de quem cansou de aceitar meias-verdades.",
+  cover: "https://i.imgur.com/xdg7P5H.jpeg",
+  pages: [
+    `<h2>Prólogo</h2>
+    <h3>O Peso de Ver</h3>
+
+    Ver demais é um castigo que eu mesmo aceitei.
+    Enquanto outros fecham os olhos pra dormir, eu fecho pra ver por dentro.
+
+    Nasci com a ilusão de que saber me faria livre. Quando criança, acreditava que se eu entendesse por que as pessoas mentem, por que vão embora, por que abraçam com um braço só eu poderia consertar tudo. Não consertei nada. Só aprendi a abrir a ferida devagar, pra doer com método.
+
+    Dizem que ignorância é bênção. Eu digo que é repouso. Porque saber, de verdade, não salva ninguém apenas empurra quem sabe pro canto da sala, pra observar o baile de máscaras que todos fingem não usar.
+
+    É confortável viver atrás de uma fantasia. É confortável se esconder atrás de um “tá tudo bem”. Mas quem arranca a própria máscara não volta mais a dormir tranquilo. Porque quem se vê sem filtro descobre rachaduras que não se remendam com amor barato ou fé improvisada.
+
+    Eu vi além das máscaras. Das minhas, das suas, das de quem jura que não usa nenhuma. Não me orgulho disso. Não faço disso medalha, nem discurso. Faço disso confissão. E, talvez, um aviso.
+
+    Se abrir este livro, saiba: cada página é uma fresta. Vai doer ver por ela. Vai doer reconhecer o mofo atrás da pintura bonita. Vai arder ver o vazio no lugar onde juraram plantar flores.
+
+    Mas se decidir seguir, eu te dou a mão. Eu esse homem cansado de fingir que não sabe. Que aceitou que não vai ser salvo. Que vai morrer cheio de gavetas abertas. Mas que, até lá, vai arrancar cada máscara que couber na estante dos outros e na própria pele.
+
+    Você pode parar agora. Fechar antes de ver. Voltar pro conforto das mentiras que te embalam pra dormir. Ou pode entrar e ver tudo que eu vi.
+
+    Escolha rápido. O Mancha já acendeu a luz.`,
+
+    `<h2>Capítulo 1</h2>
+    <h3>Infância do Vazio</h3>
+Ninguém nasce vazio. Vazio é cavado em silêncio, enquanto a gente cresce esperando que alguém venha tapar os buracos com abraço.
+
+Minha infância não teve vilões de conto. Não teve monstro debaixo da cama o monstro estava sentado à mesa, às vezes no silêncio, às vezes no olhar que dizia engole o choro.
+É assim que nasce a fome que não se satisfaz: um dia você entende que amor não é garantia, é empréstimo. E quem empresta pode tomar de volta.
+
+Aprendi cedo a medir presença por falta. Gente demais na sala, afeto de menos nos cantos. Voz alta, abraço curto.
+É desse contraste que se faz a carência: o corpo cresce, a fome não.
+Você aprende a sorrir para ganhar colo, a engolir a pergunta pra não perder o pouco que te dão.
+
+Cresci colecionando migalhas: um elogio mal dado, um olhar que parecia orgulho mas era alívio. Anos depois percebi: quem aprende a aceitar migalha cresce amando quem dá resto.
+
+Hoje eu entendo não culpo ninguém. Não escrevo pra acusar, escrevo pra lembrar: se há um vazio, não é culpa da criança. O buraco se abre porque a pá é passada de mão em mão, geração em geração.
+
+E assim nasce o adulto que se faz de inteiro, mas acorda de madrugada sentindo que falta um pedaço.
+O buraco nunca fecha só muda de nome: carência, dependência, apego, paixão. Chamam de amor, mas é buraco.
+
+Eu vi isso em mim. Eu vi isso em você. Eu vi isso em todo mundo que sorri bonito mas dorme abraçado a fantasmas.`,
+
+    `<h2>Capítulo 2</h2>
+    <h3>Síndrome de Protagonismo</h3>
+Todo mundo quer ser história. Ninguém quer ser rodapé.
+
+A maior mentira que vendem hoje é que todo mundo é especial. Cada um protagonista da própria saga, como se a vida fosse palco iluminado pra um único ator. Mas a plateia tá cansada e, às vezes, nem existe.
+
+A síndrome de protagonismo é sorrateira. Começa pequena: uma certeza de que o outro deve ficar, ouvir, responder. Vira raiva quando o outro não lê a mensagem, não responde na hora, não confirma a história que a gente escreveu sozinho.
+
+É fácil: você cria uma narrativa na cabeça. Você é o centro. O outro é figurante de luxo alguém que existe pra confirmar teu roteiro. Quando não confirma, o script falha. Aí vem o discurso: “Ninguém me entende”. E o vazio cresce mais um palmo.
+
+Ser protagonista o tempo todo é exaustivo. Pior: é uma armadilha. Porque quem se põe no centro se obriga a carregar tudo sozinho. Precisa provar o tempo todo que merece ser olhado. Precisa sustentar aplauso, mesmo quando não tem mais plateia.
+
+A verdade? A vida é coral desafinado. Às vezes você é solo, às vezes cenário. Às vezes falam teu nome na maior parte do tempo, não.
+Aceitar isso é perder a fantasia do herói mas ganhar a liberdade de ser só humano. Invisível, às vezes. Desimportante, quase sempre.
+Mas real. Livre do script.
+
+Eu já quis ser protagonista de todo amor que vivi. Quis monólogo, quis final de cinema. Hoje entendo: cada pessoa escreve seu roteiro  e eu nem sempre apareço nos créditos.
+
+Ainda assim, continuo. Não como estrela, mas como observador que, de vez em quando, rouba uma fala de fundo. E volta pro canto, sem aplauso, mas inteiro.`,
+    `<h2>Capítulo 3</h2>
+     <h3>Bonecas de Fita</h3>
+ Quem disse que inocência não se vende? Vende e caro. E a vitrine é rosa, cheia de adesivo fofo.
+
+As Bonecas de Fita não querem crescer não porque crescer dói, mas porque crescer obriga a perder plateia.
+Elas entendem cedo que fragilidade é moeda. Que ninguém cobra responsabilidade de quem fala fino, de quem posa de boba, de quem vive dizendo “me protege”.
+É a infância performada ensaiada pra nunca acabar.
+
+Elas se chamam de Luli Kawaii, menininhas adultas que se escondem em voz de boneca. Mas quem finge ser de porcelana sabe que ninguém larga uma boneca quebrada sem culpa.
+Essa é a mágica: transformam carência em chantagem doce. Ninguém briga com fofura mas fofura briga de volta se não for aplaudida.
+
+Não é sobre roupa, sobre emoji, sobre filtro cor-de-rosa. É sobre a máscara: um escudo pra não encarar a dureza de ser gente grande, cheia de conta, cheia de culpa, cheia de não saber o que fazer da vida.
+Melhor posar de indefesa sempre aparece um colo pra segurar.
+
+Eu vi de perto. Abracei algumas. Jurei proteger. Achei que era amor era palco.
+Quando percebi, estava ali, decorando fala pra não assustar a boneca. Pisando leve, sorrindo doce, alimentando a ilusão que ela mesma me vendeu.
+
+Hoje passo por elas com ternura e distância. Não há maldade em ser Boneca de Fita, mas há perigo em amar uma esperando que um dia vire adulta.
+Bonecas não crescem se quebram ou somem na prateleira de quem vier depois.`,
+    `<h2>Capítulo 4</h2>
+    <h3>Bonecas de Fita</h3>
+ Quem disse que inocência não se vende? Vende e caro. E a vitrine é rosa, cheia de adesivo fofo.
+
+As Bonecas de Fita não querem crescer não porque crescer dói, mas porque crescer obriga a perder plateia.
+Elas entendem cedo que fragilidade é moeda. Que ninguém cobra responsabilidade de quem fala fino, de quem posa de boba, de quem vive dizendo “me protege”.
+É a infância performada ensaiada pra nunca acabar.
+
+Elas se chamam de Luli Kawaii, menininhas adultas que se escondem em voz de boneca. Mas quem finge ser de porcelana sabe que ninguém larga uma boneca quebrada sem culpa.
+Essa é a mágica: transformam carência em chantagem doce. Ninguém briga com fofura mas fofura briga de volta se não for aplaudida.
+
+Não é sobre roupa, sobre emoji, sobre filtro cor-de-rosa. É sobre a máscara: um escudo pra não encarar a dureza de ser gente grande, cheia de conta, cheia de culpa, cheia de não saber o que fazer da vida.
+Melhor posar de indefesa sempre aparece um colo pra segurar.
+
+Eu vi de perto. Abracei algumas. Jurei proteger. Achei que era amor era palco.
+Quando percebi, estava ali, decorando fala pra não assustar a boneca. Pisando leve, sorrindo doce, alimentando a ilusão que ela mesma me vendeu.
+
+Hoje passo por elas com ternura e distância. Não há maldade em ser Boneca de Fita, mas há perigo em amar uma esperando que um dia vire adulta.
+Bonecas não crescem se quebram ou somem na prateleira de quem vier depois.`,
+     `<h2>Capítulo 5</h2>
+     <h3>A Fome Por Testemunha</h3>     
+Não basta existir tem que alguém ver. Ver é validar. Ver é dar forma.
+
+Desde criança, aprendi que a falta mais perigosa não é de comida, de teto, de amor. É a falta de olhos.
+Ninguém suporta ser invisível por muito tempo mesmo quem jura amar a solidão.
+A gente até suporta o silêncio, mas quer barulho de alguém que confirme: “Eu vi você aí.”
+
+Essa fome por testemunha se disfarça bem. Às vezes parece arte: alguém posta texto triste na madrugada. Às vezes parece piada: a foto sorrindo pra não assustar ninguém. Às vezes é só drama escancarado: um pedido mudo de “me nota, me segura, me garante que eu não sumo.”
+
+A testemunha é colo simbólico mesmo que não abrace de verdade, mesmo que só passe o olho e esqueça depois. Um “curtir” pode durar segundos, mas alimenta um buraco que latejou por anos.
+
+Tem quem faça da fome profissão. Influencers de tragédia pessoal. Vendedores de vulnerabilidade embalados pra consumo rápido. Fazem da dor vitrine, do choro produto, da carência espetáculo.
+Quem observa, compra. Por empatia, por curiosidade, por voyerismo. Pouco importa. O que importa é não ficar invisível.
+
+Eu também sou assim não minto. Se escrevo, é porque alguém vai ler. Se conto, é porque alguém vai guardar. Se respiro fundo antes de rasgar o peito em palavras, é porque, de algum modo, quero plateia mesmo que silenciosa, mesmo que de passagem.
+
+Talvez a única diferença seja admitir: não busco aplauso. Busco prova de que existo.
+No fim, é tudo isso: um buraco pedindo olho. Uma frase esperando ouvido. Um eu querendo não ser nada, mas também não ser ninguém.`,
+     `<h2>Capítulo 6</h2>
+     <h3>O Homem-Cofre</h3>
+Guardei tanta coisa que um dia precisei me trancar por dentro pra não vazar.
+
+Sempre fui cofre. Desde pequeno, aprendi a engolir palavras que não cabiam na casa.
+Choro engolido pra não preocupar. Raiva engolida pra não apanhar. Vontade engolida pra não decepcionar.
+Engoli até o que não era meu: segredo de amigo, promessa quebrada, confissão alheia tudo bem guardado, trancado atrás da cara calma.
+
+Com o tempo, descobri que ser cofre tem truque. Por fora, parece força: “Ah, ele é discreto, é forte, é confiável.”
+Por dentro, é exílio: ninguém sabe onde dói, ninguém adivinha onde lateja, ninguém tem a chave. E, às vezes, nem eu.
+
+O problema do cofre não é o que ele guarda é que ele guarda tudo.
+O que devia ter ido embora, ele prende. O que devia ser dito, ele sufoca. O que devia morrer, ele embalsama.
+
+Já tentei abrir. Dei pista, dei senha, deixei a tampa entreaberta. Mas gente se assusta com o que tem lá dentro.
+Quando se aproxima demais, quer levar o tesouro mas foge do mofo. Quer usar a chave, mas não sabe limpar a ferrugem.
+
+Fui ficando velho de tanto guardar.
+Hoje sou cofre trancado dentro de outro cofre: um corpo que respira e finge normalidade mas que por dentro é depósito de memórias, dores e segredos que ninguém pediu pra guardar.
+
+Talvez, no fim, escrever isso aqui seja meu jeito de destrancar a tampa, só um pouco.
+Deixar escapar ar viciado. Mostrar que o homem que viu além das máscaras é, também, o homem que engoliu todas e esqueceu como cuspir.`,
+    `<h2>Capítulo 7</h2>
+    <h3>O Mancha</h3>
+> Quando o cofre tranca demais, nasce um carcereiro por dentro. O meu tem nome: Mancha.
+
+Não sei se o Mancha sou eu ou se sou só inquilino dele. Às vezes acho que o inventei pra não enlouquecer um zelador mental que vasculha a bagunça e me obriga a olhar de novo o que finjo que não existe.
+
+Chamei de Mancha porque ele não tem forma certa. É sombra que se encosta no canto da mente. Voz que sussurra sem boca. Mão que puxa a gaveta que eu preferia esquecer.
+
+O Mancha não fala muito. Ele mostra. Mostra o dia em que aprendi a engolir choro. Mostra o quarto escuro onde sonhei que ser visto era salvação. Mostra cada rosto que guardei, mesmo depois de ir embora.
+
+O Mancha é o arquivista da minha ruína. Não cria dor nova só reorganiza a antiga. Põe etiquetas, empilha memórias, revisita o passado como quem limpa armário mofado.
+Ele não tem pressa. Às vezes some por semanas, me deixa respirar. Depois volta, cutuca, reabre ferida, diz: “Tá aqui. Não terminou de doer.”
+
+No fundo, o Mancha me faz favor: enquanto ele existir, o cofre não explode.
+Enquanto ele arquivar, eu escrevo. Enquanto ele acender a luz, o mofo não me devora por dentro.
+
+Mas toda noite em que o Mancha aparece, lembro que não estou sozinho aqui dentro.
+Talvez eu seja só depósito e ele, de fato, o dono da chave.`,
+    `<h2>Capítulo 8</h2>
+    <h3>Auto-Projeção</h3>
+ Ver demais por fora é fácil difícil é entrar em si mesmo e não mentir pra porta do espelho.
+
+Quando o Mancha quer me torturar, ele não grita ele abre a porta da mente e me convida pra passear.
+Chamo isso de auto-projeção: um truque sujo de quem cansou de fingir que não sabe.
+Eu deito, fecho os olhos e caminho por corredores que não existem fora da minha cabeça. Cada porta é um episódio que não terminou, cada quarto é um retrato do que ainda me come por dentro.
+
+Nessas viagens, vejo o menino que fui, agachado num canto, jurando que vai consertar o mundo se alguém ficar.
+Vejo o adolescente que jurou ser diferente, mas virou a cópia que mais odiava.
+Vejo o homem que finge força, mas ainda treme se ouve a palavra certa no tom errado.
+
+Auto-projeção não cura mostra.
+É o Mancha segurando lanterna enquanto eu tropeço em mim mesmo.
+Às vezes tenho vontade de rasgar parede, sair correndo, fingir que não vi. Mas quem enxerga não desaprende.
+
+Nessas visitas, eu revisito o fundo do poço e percebo que não caí eu cavei.
+Palada por palada, deitei desculpa, ergui muro, convidei quem me ajudou a cavar mais fundo. E depois reclamei da profundidade.
+
+Quando acordo desse passeio, não sou santo. Não sou curado.
+Sou só alguém que, por alguns minutos, olhou pra dentro sem legenda. E entendeu que ver é o primeiro passo mas nem sempre é o suficiente pra sair.`,
+   `<h2>Capítulo 9</h2>
+   <h3>Gavetas Trancadas</h3>
+   Toda mente tem cômodos onde ninguém entra. Os meus têm tranca dupla.
+
+Depois da auto-projeção, eu percebo: nem tudo se deixa abrir.
+Por mais que o Mancha organize, por mais que eu force a chave, algumas gavetas continuam seladas.
+É onde guardo o que não sei dizer.
+Onde mora a parte que ninguém merece ver nem quem me ama, nem quem me fere.
+
+Tem memórias que não suportariam a luz. Se escorressem pro papel, estragariam a história toda.
+Então eu deixo lá. Fecho bem. Prego a placa de “não mexer”.
+Não é covardia é sobrevivência.
+Porque quem abre todas as gavetas de uma vez se desmonta no chão. E nem sempre alguém ajuda a juntar os pedaços.
+
+Algumas gavetas têm nomes: o rosto que não esqueci, a culpa que não paguei, a raiva que ainda lateja quando chove dentro.
+Outras são tão velhas que nem nome têm mais só cheiro de mofo e rangido de dobradiça.
+
+De vez em quando, o Mancha encosta o ouvido na porta, cutuca de leve. Sussurra: “Vai abrir?”
+Eu digo não. Ele ri. Ele sabe que um dia eu vou.
+Talvez abra num verso, numa frase atravessada, num abraço que me faça esquecer que existe chave.
+
+Até lá, sigo escrevendo com as gavetas trancadas.
+Não é mentira é só metade da verdade.
+A parte que cabe em voz sem estilhaçar quem ouve.`,
+    `<h2>Capítulo 10</h2>
+    <h3>A Falta que Morde</h3>
+Carência não é romântica. É animal. Morde devagar, lambe quando sangra, pede mais quando não tem nada.
+
+A falta nasce pequena um buraco que a gente acha que alguém vai tapar com presença, carinho, promessa.
+Depois ela cresce, ganha dentes. Aprende a se alimentar de tudo que encontra: elogio torto, migalha de atenção, um “bom dia” de quem não se importa.
+
+Eu vivi muito tempo alimentando a minha falta com qualquer farelo que me jogavam.
+Achava que se eu fosse bom o bastante, doce o bastante, útil o bastante, alguém ficaria.
+Ninguém fica pra tapar buraco de ninguém no máximo, descansa nele um tempo, deixa cheiro, vai embora.
+A falta sobra.
+
+Ela morde quando não é vista.
+Morde quando é contrariada.
+Morde quando alguém tenta curar do jeito errado.
+Morde quando você acha que matou, mas só cobriu com paninho bonito.
+
+Alguns viram doadores de afeto: fazem tudo, dão tudo, cedem tudo.
+Não é bondade é medo de ficar sem.
+Outros viram vampiros: sugam tudo do outro, até o resto de amor-próprio, pra alimentar o poço dentro do peito.
+
+A falta não morre. Aprende a se disfarçar: vira piada, vira autossuficiência fingida, vira discurso de “eu sou assim mesmo”.
+Mas à noite, no travesseiro, rasga.
+
+Eu escrevo pra mantê-la ocupada.
+Cada frase é isca. Cada página é armadilha.
+Funciona por um tempo depois ela volta, bate na porta, pede mais.
+
+É isso: viver é aprender a conviver com o bicho.
+Treinar pra que ele morda só quando ninguém olha.
+E torcer pra que, um dia, ele se canse de roer.`,
+    `<h2>Capítulo 11</h2>
+    <h3>Entre Parasitas e Hospedeiros</h3>
+ Tem gente que só sabe amar se sugar. E gente que só se sente amado quando é sugado.
+
+Nem todo parasita se esconde em silêncio alguns se declaram amor.
+Chegam mansos, carentes, com a promessa de que vão ficar pra sempre e ficam, mas não inteiros. Ficam grudados em tudo que você é, tudo que você tem, tudo que pode doar.
+
+O parasita não quer você quer o que você oferece: colo, ouvidos, desculpas, a paz que você não tem mas finge que tem pra salvar quem não quer ser salvo.
+Ele chora pra te amarrar, ri pra te distrair, geme miséria pra te obrigar a ser herói.
+
+Do outro lado, o hospedeiro: quem aceita.
+Acha que pode curar. Acha que é especial por aguentar. Acha que se der tudo de si, o outro se torna inteiro não se torna. Só engorda a fome.
+
+É um jogo: um alimenta, o outro devora. E os dois juram que isso é amor é só carência que encontrou espelho.
+
+Eu fui hospedeiro. Deixei sugarem tudo: atenção, sono, vontade, tempo. E quando reclamei, ouvi que era egoísta como ouso negar alimento a quem me escolheu pra matar a fome?
+
+Também fui parasita não minto. Já suguei abraço de quem não devia, já drenei paciência de quem não podia, já pedi amor quando não tinha nem metade pra retribuir.
+
+Entre parasitas e hospedeiros não há vítima pura há troca.
+Dois buracos se beijando, fingindo que juntos são muralha.
+Dois vazios que se amarram, fingindo que assim se completam.
+Nunca dura. Sempre sangra.
+
+No fim, sobra o mesmo: um corpo cansado, uma mente exausta e o gosto amargo de ter chamado isso de nós.`,
+  `<h2>Capítulo 12</h2>
+  <h3>A Ressaca do Herói</h3>
+Todo herói secreto termina bêbado de decepção.
+
+Eu fui herói pra quem não pediu ajuda. Inventei missão em peito que não era meu. Me ofereci pra segurar mundo que ninguém queria carregar comigo.
+A fantasia era bonita: ser o salvador, o porto seguro, o escudo contra toda dor alheia.
+Parecia nobre era vaidade.
+
+Porque salvar é poder. Quem tenta salvar sem ser chamado quer aplauso. Quer sentir que a presença é tão grande que cura.
+Quando não cura, sobra a ressaca: o gosto de ter dado tudo e não ter mudado nada.
+
+A verdade é cruel: ninguém é salvo à força.
+Você pode dar conselho, dinheiro, colo, tempo. Se o outro não quiser sair do poço, cava mais fundo enquanto você estende a mão.
+Você sangra tentando puxar o outro se afunda sorrindo.
+
+A ressaca vem quando o herói percebe que ninguém carrega ninguém por muito tempo. Vem quando descobre que quem se pendura nele um dia larga ou puxa junto pro fundo.
+Vem quando entende que toda promessa de “preciso de você” era só anestesia pra dor de quem não quer enfrentar o espelho.
+
+Eu já quebrei coluna segurando mundo que não era meu.
+No fim, quando larguei, fui chamado de traidor como se o herói fosse eterno.
+A ressaca é isso: não ter quem te salve depois de tentar salvar todo mundo.
+
+Hoje não sou herói de ninguém.
+Se vierem pedir colo, ofereço chão.
+Se vierem pedir salvação, aponto a saída não carrego mais ninguém no colo que já tá cansado de segurar a mim mesmo.`,
+  `<h2>Capítulo 13</h2>
+  <h3>O Fim do Espetáculo</h3>
+ Todo ato termina com aplauso ou vaias. O problema é quando ninguém fica pra bater palma.
+
+Passei anos me despindo de máscaras, cuspindo verdades, rasgando o script que me deram.
+Fiz da honestidade meu palco como se fosse virtude suficiente mostrar a ferida aberta.
+
+Mas quem rasga a própria máscara sempre arruma outra.
+A confissão também é espetáculo. O discurso de “eu não preciso de plateia” também é plateia.
+No fundo, eu sei: toda frase que escrevo é convite. Toda ferida exposta é pedido de testemunha.
+Ainda sou palco só mudei o figurino.
+
+É bonito dizer que parei de atuar. É mentira dizer que não espero que alguém leia.
+O Mancha ri quando percebo isso: mesmo quando grito “não quero plateia!”, ainda ensaio o grito pra que alguém ouça.
+
+O fim do espetáculo não existe. Só muda de cenário.
+Às vezes é um texto postado na madrugada. Às vezes é uma piada pra fingir que não dói. Às vezes é um silêncio calculado pra ver quem se importa.
+
+A vergonha não está em admitir a vergonha está em mentir que não é assim.
+Eu atuo até quando digo que não atuo. E quem me lê, atua junto: finge que entende, finge que se importa, finge que também rasgou a máscara mas guarda outra no bolso, caso precise sair bonito na foto.
+
+No fundo, é isso: ninguém abandona o palco por completo.
+A gente só apaga metade das luzes e chama isso de “vida real”.`,
+   `<h2>Capítulo 14</h2>
+   <h3>Última Confissão</h3>   
+ Não escrevo pra ser entendido escrevo pra não explodir.
+
+Se você chegou até aqui, parabéns: segurou minha mão suja de mofo até o fim.
+Não prometo recompensa, redenção ou lição. Não tenho.
+Tenho só essa última confissão: tudo que contei ainda não é tudo.
+Há gavetas que não abri. Há portas que não tive coragem de arrombar. Talvez nunca tenha.
+
+O Homem que Viu Além das Máscaras não é sábio é só cansado.
+Cansado de segurar disfarce, cansado de aceitar disfarce dos outros, cansado de dormir fingindo que amanhã vai doer menos.
+Não vai.
+
+O Mancha ainda mora aqui. Ainda sussurra. Ainda reorganiza o que deixo espalhar.
+Talvez, quando eu partir, ele feche tudo de novo ou apague tudo de uma vez, pra ninguém fuçar depois.
+
+Se você leu, saiba: você também abriu fresta. Talvez tenha visto reflexo que não gostou. Talvez tenha encontrado um buraco igual ao meu, mordendo devagar aí dentro.
+
+Não sou exemplo, não sou mártir, não sou herói de história feia.
+Sou só cofre que resolveu vazar um pouco.
+Amanhã volto a engolir. Amanhã ponho outra máscara, sorrio no mercado, digo “tudo bem” na fila do banco.
+E vou embora sem deixar cheiro de mofo por onde passo.
+
+Se tiver sorte ou coragem talvez você faça o mesmo.
+Talvez rasgue a tua máscara também.
+Ou não.
+E tudo bem.
+
+No fim, confissão não salva ninguém mas alivia o peso por uma noite.`,
+   `<h2>Epílogo</h2>
+   <h3>Carta ao Espelho</h3>
+A verdade final é essa: ninguém tira todas as máscaras. Quem diz que tirou, mentiu ou trocou por outra, mais confortável.
+
+Eu não sei quem sou sem as minhas.
+Sou o homem que vasculhou ruínas, abriu cofres, conversou com o Mancha, tentou nomear vazios que ninguém quer admitir em voz alta.
+Mas amanhã ainda vou sorrir pra quem perguntar “tudo bem?”.
+Vou responder que sim é mentira doce, máscara lavada, sorriso limpo.
+Ninguém quer verdade crua o tempo todo. Nem eu.
+
+Se restou algo dessa viagem, que seja isso: cuidado com quem promete verdade demais.
+Desconfie de quem se faz de puro, de quem jura que não esconde nada.
+Todo mundo mente um pouco pra si mesmo pra não enlouquecer.
+
+Talvez você termine essas páginas sentindo um gosto amargo: “É só isso?”
+É. É só isso.
+Confissão não salva, não cura, não faz renascer.
+Só alivia por uns dias.
+
+Depois a porta fecha, o Mancha acende a luz, a gaveta tranca de novo.
+E a vida segue como sempre seguiu.
+Com máscara, com buraco, com colo emprestado.
+Até que tudo vire pó ou livro.
+
+E se alguém perguntar o que você viu aqui, diga a verdade:
+nada demais só um homem que ousou ver além das máscaras.
+E ainda assim, guardou uma última só dele.`
+   ]
+  },
+  4: { 
+title:"Paradigma Do Badboy",
+desc:"Aprenda a se tornar no que elas acham atraente sem perder seu ser",
+cover:"https://i.imgur.com/PqaDL4B.jpeg",
+pages: [
+    `<h2>Introdução</h2>
+    <h3>Por que o Badboy Atraí ?</h3>
+Todo mundo nega, mas todo mundo sabe: quem não se oferece inteiro é quem mais ocupa espaço na cabeça.
+
+Ele some, volta, ri, provoca.
+Não se explica. Não implora. Não despeja “bom dia, princesa” todo dia, nem faz juras eternas na segunda mensagem.
+Ele entende uma lei simples: presença constante cansa ausência controlada vicia.
+
+O Paradigma do Badboy não é manual de cafajeste.
+Não é sobre mentir, trair ou machucar isso é mediocridade, não charme.
+É sobre entender o poder de ser escasso num mundo de gente desesperada pra ser notada a cada segundo.
+
+O Badboy não é carente.
+Ele não precisa de plateia. Não precisa ser amado o tempo todo. E é justamente aí que mora o veneno:
+Ele não força. Ele não se explica. Ele não morre se você for embora.
+
+A verdade é que a maioria das pessoas se apaixona mais pelo vazio do que pelo cheio.
+O que some dá espaço pra imaginação, pra idealização, pra saudade.
+O que gruda sufoca, vira rotina, perde valor e acaba largado.
+
+Este livro não vai te ensinar a ser um babaca. Vai te mostrar o valor de não mendigar.
+Vai te dar a coragem de sumir na hora certa. Vai te ensinar a voltar no momento exato e, principalmente, a entender que se alguém não volta, não vale a pena ficar.
+
+Você vai ler sobre fronteira, sumiço, reaparição, ironia. Vai ver exemplos de mensagem, de sumiço proposital, de reaparecimento calculado.
+E, no final, talvez descubra que o verdadeiro Badboy não é o cara que finge não sentir mas o que sente, escolhe não grudar, e ainda assim faz falta.
+
+Se quiser aprender a conquistar alguém implorando, feche o livro agora.
+Se quiser entender o gosto de ser lembrado mesmo longe seja bem-vindo.
+Apague a luz, vista a jaqueta, e guarda esse isqueiro: sumir também é arte.`,
+   `<h2>Capítulo 1</h2> 
+   <h3>O Anti-Carente</h3>
+ O carente precisa ser visto. O Badboy faz questão de ser lembrado.
+
+O mundo tá lotado de gente desesperada pra ser notada.
+Mensagem às 7 da manhã, áudio de 5 minutos contando drama, “bom dia” que vira “cadê você?” depois de uma hora.
+Carência fede quem sente, sente o cheiro de longe.
+Quem vive de mendigar presença acaba servindo de tapete pra quem não merece.
+É o excesso que mata o encanto.
+
+O Badboy não implora.
+Ele não manda “me responde”. Não atualiza status pra chamar atenção.
+Ele some, mas não some porque é covarde some porque entende o valor do silêncio.
+
+O Anti-Carente não faz drama.
+Ele não força intimidade.
+Não tenta agradar quem não tá disposto a ficar.
+Se percebe que a troca virou mendigaria, ele corta o fio. Some na hora certa.
+Não é sobre punição é sobre não se reduzir.
+
+Na prática, isso significa:
+— Você não precisa ser grosso. Precisa ser coerente.
+— Você não precisa desaparecer por semanas. Precisa dar espaço pra saudade.
+— Você não precisa gritar independência. Precisa agir como alguém que tem mais o que fazer.
+
+A maioria não aguenta isso.
+Gente carente precisa de resposta imediata senão surta, cria paranoia, inventa motivo pra atacar.
+O Badboy não surta quem surta é quem se acostumou com afeto fácil.
+
+O Anti-Carente não é gelado o tempo todo.
+Quando tá, tá. Entrega presença inteira. Depois vai embora antes de virar obrigação.
+É presença de valor não rotina entediante.
+
+No fundo, todo mundo sabe:
+Quem faz falta é lembrado.
+Quem implora é esquecido.`,
+   `<h2>Capítulo 2</h2>
+   <h3>Desapego Inteligente</h3>
+ Sumir é fácil. Sumir com propósito é arte.
+
+O sumiço do Badboy não é birra.
+Não é joguinho barato de quem quer ver o outro rastejar.
+É respiro. É corte no excesso. É pausa pra saudade trabalhar por ele.
+
+Carente some pra ser notado. O Badboy some porque não precisa ficar o tempo todo.
+Ele entende: presença demais vicia errado. Vira comodidade.
+A ausência certa vira brasa incomoda, arde, deixa gosto.
+
+Desapego inteligente não é ignorar mensagem de propósito pra parecer ocupado quando, na real, tá sem nada pra fazer.
+É ter vida além da outra pessoa. É não estar sempre disponível. É ter coragem de não responder na hora porque existe mundo além da tela.
+
+Quem implora fica. Quem sabe sair faz falta.
+E pra isso existe método não é sumir pra sempre, não é castigo eterno. É sumir do jeito certo:
+
+ <h3>Manual Rápido do Sumiço Certeiro</h3>
+
+ <h4>1. Some quando estiver bom.</h4>
+Se tá tudo fluindo, ri, troca mensagem boa corta na alta.
+Deixa o “quero mais” no ar. Não mate o tesão se estendendo até ficar chato.
+
+ <h4>2. Não dê satisfação.</h4>
+“Preciso sumir porque blá blá blá…” não. Some. Apareça depois.
+Quem cobra explicação pra tudo não entende o jogo.
+
+ <h4>3. Volte no momento certo.</h4>
+Não surja pedindo desculpa. Volte com humor, provocação, cutucada leve.
+
+ <h4>4. Não exagere.</h4>
+Sumir 1 dia é charme. Sumir 2 semanas é desinteresse.
+Não estique tanto que mate o fogo. É dose controlada.`,
+    `<h2>Capítulo 3</h2>
+    <h3>Humor & Provocação</h3>
+A provocação certa é o anzol. O humor é a isca. O ego do outro faz o resto.
+
+O Badboy não é muro de concreto é muro que ri.
+Ele não é grosso por grosseria. Não é frio por pose.
+Ele sabe: ser interessante é ser imprevisível. E nada é mais imprevisível do que a brincadeira que beija o limite mas não o ultrapassa.
+
+O carente bajula. O Badboy provoca.
+A diferença? Bajulação é doce demais enjoa.
+Provocação é salgado: arde na língua, deixa gosto, faz a pessoa querer mais pra ver onde isso vai dar.
+
+ <h3>A Regra de Ouro: Rir sem Humilhar</h3>
+
+Provocar não é humilhar.
+Não é jogar trauma na cara. Não é zoar defeito sério.
+É brincar com o que a pessoa aguenta brincar e dar risada junto.
+
+Quando erra a mão, o charme vira grosseria.
+Quando acerta, vira jogo interno: “será que ele gosta de mim ou tá só me tirando?”
+
+É aí que mora o vício.
+
+<h3>Quando parar?</h3>
+
+Se a pessoa não ri de volta: troque de assunto.
+
+Se ficar ofendida de verdade: peça desculpa.
+
+Se perceber que a provocação virou faca: suma educadamente ou mude de estratégia.
+
+
+Provocar é entender fronteira.
+É saber o gosto do outro: tem quem adore ironia, tem quem se feche.
+O Badboy lê isso no ar e ajusta o veneno.
+
+ <h3>Humor é arma. Sem humor, vira abuso.</h3>
+
+Sem risada, não é charme é grosseria.
+Com risada, é sedução.
+Quem sabe provocar sabe onde tocar e onde não encostar.`,
+  `<h2>Capítulo 4</h2>
+  <h3>O Mistério Como Isca</h3>
+   Contar tudo mata a mágica. Falar menos faz dormir pensando.
+
+O carente despeja a vida inteira na primeira noite.
+Conta tudo: trauma, ex, sonho, plano, saudade. É um confessionário ambulante e ninguém quer confessar pra sempre.
+Saturar mata o fascínio.
+
+O Badboy entende: o mistério alimenta a mente.
+Quem sabe pouco, imagina muito.
+Quem sabe tudo, larga porque não tem mais nada pra descobrir.
+
+ <h3>O valor do não-dito</h3>
+
+Não é sobre mentir é sobre não abrir tudo.
+Responde o que quer, guarda o que importa.
+Solta detalhe pela metade:
+ 
+ “Já fui pior.”
+“Nem tudo que eu conto é verdade vai ter que descobrir.”
+
+É pílula de dúvida: planta a pergunta, mas não entrega resposta.
+
+ <h3>Manual do Mistério</h3>
+
+ <h4>1. Responda metade.</h4>
+Se perguntarem “Você tá onde?”, diga “Perto demais pra escapar.”
+
+ <h4>2. Jogue indireta, mas não conclua.</h4>
+“Tem coisa que eu não conto por mensagem.”
+
+ <h4>3. Não justifique sumiço.</h4>
+Voltou? Tá tudo bem? Deixa subentendido.
+O silêncio faz o outro preencher a lacuna.
+
+ <h4>4. Foque em olho no olho.</h4>
+Quando ver ao vivo, conte mais mas não tudo.
+A cada encontro, solte uma peça nova.
+
+ <h3>Mistério não é ghosting</h3>
+
+Sumir pra sempre é covardia.
+Fingir desinteresse total é grosseria.
+O Badboy não some pra sempre ele cria falta.
+Ele não esconde tudo ele guarda o suficiente pra deixar gosto.
+
+O que some demais é esquecido.
+O que fala demais é esgotado.
+O que dosa a fala gruda na mente.`,
+   `<h2>Capítulo 5</h2>
+   <h3>Entre o Frio e o Calor</h3>
+   Gelo puro afasta. Fogo puro queima. É o equilíbrio que vicia.
+
+Tem quem ache que o Badboy é só desprezo: ignora, ignora, ignora.
+Não é assim. Se fosse, seria chato não irresistível.
+A graça é o contraste: frio que vira calor na hora certa. Desapego que vira presença que faz derreter.
+
+O Badboy é ausência pra fazer a presença ter valor.
+Ele sabe: quando aparece, tem que ser inteiro.
+Nada de estar fisicamente ali mas mentalmente em outro lugar.
+Nada de conversa morna.
+Se é pra estar, é pra marcar.
+
+ <h3>Regras do Calor Certo</h3>
+
+ <h4>1. Entregue atenção total mas não sempre.</h4>
+Quando fala, fala de verdade.
+Quando toca, toca direito.
+Quando ri, ri alto.
+Depois… vai embora. E pronto.
+
+ <h4>2. Surpreenda.</h4>
+Mande mensagem fora de hora mas não todo dia.
+Elogie quando ninguém espera mas sem bajular.
+Exemplo: “Tá bonita hoje? Pena que vou sumir de novo.”
+
+ <h4>3. Não exagere na frieza.</h4>
+Frio demais vira arrogância vazia.
+A pessoa precisa sentir o calor pra querer suportar o gelo.
+É isso que prende: saber que quando volta, é bom.
+
+ <h3>Picos de Presença</h3>
+
+A magia é ser imprevisível:
+Hoje é sumiço. Amanhã é calor.
+Depois, sumiço de novo.
+Assim se constrói vício e vício é presença mental.
+
+O carente é constante perde valor.
+O Badboy é variação ninguém sabe o que esperar.
+
+ <h3>Charme é falta. Tesão é contraste.</h3>
+
+Quem é só doce, enjoa.
+Quem é só gelo, afasta.
+Quem mistura os dois gruda na mente.`,
+  `<h2>Capítulo 6</h2>
+  <h3>O Badboy Apaixonado</h3>
+  O desafio não é gostar é gostar sem se perder.
+
+O Badboy também se apaixona.
+Não é máquina, não é pedra, não é mito gelado.
+O charme dele é justamente não fingir que não sente mas não se ajoelhar por isso.
+
+Quem se afoga na paixão vira o carente que ele sempre desprezou.
+Quem tenta controlar demais, vira robô mata o tesão, seca o calor.
+O ponto é manter a fronteira: entregar presença real, mas guardar um canto só dele.
+
+ <h3>Regra de Ouro: Fronteira</h3>
+
+Você pode gostar, abrir o peito, deitar no colo mas não se reduz a isso.
+O Badboy apaixonado não implora pra ser amado.
+Ele mostra que quer mas não precisa.
+Quem precisa é quem perdeu o eixo.
+
+ <h3>Como não virar o carente que some</h3>
+
+1.Continue sumindo mas do jeito certo.
+Agora o sumiço não é fantasma, é respiro.
+É manter a vida fora do relacionamento.
+É ter amigos, rolês, tempo sozinho.
+Quem cola 100% sufoca e perde valor.
+
+2.Diga que sente mas não mendigue.
+Não tenha medo de dizer “gosto de você”, “senti saudade”.
+Mas não cobre retorno imediato.
+Mostre não exija.
+
+3.Se der medo de perder, engole.
+O Badboy não ameaça sumir ele some se for necessário.
+Ele não faz chantagem ele impõe ausência real se virar palhaçada.
+Sem cena, sem birra.
+
+  <h3>Quando abrir exceção</h3>
+
+Tem hora que vale ser bobo, colar, ficar grudado.
+O segredo é não tornar isso regra.
+Picos de entrega mantêm vivo constância mata.
+Você quer ser colo, não coleira.
+
+ <h3>No final, o charme é esse</h3>
+
+O Badboy apaixonado ainda é mistério.
+Ainda é ausência na medida.
+Ainda é provocação entre beijos.
+É presença inteira mas não garantida.
+É isso que faz quem fica valorizar cada retorno.`,
+  `<h2>Capítulo 7</h2>
+  <h3>Quando Você Exagera</h3>
+  A mesma ausência que atrai pode virar muralha. A mesma provocação que diverte pode virar faca.
+
+O Paradigma do Badboy é equilíbrio: dose certa de silêncio, dose certa de calor, provocação no limite.
+Quando passa do ponto, tudo desanda.
+O Badboy vira só um moleque birrento, ou um arrogante previsível e quem fica? Ninguém.
+
+ <h3>Erro Clássico 1: Sumir Demais</h3>
+
+Sumir é arte — mas sumir demais é preguiça.
+Se você desaparece por dias, semanas, sem rastro, sem clima, vira desinteressante.
+Mistério é bom até o ponto em que a pessoa percebe que tanto faz se você existe ou não.
+
+Como corrigir:
+→ Sumiço tem volta. Se não tem volta, é fuga não charme.
+
+ <h3>Erro Clássico 2: Ironia que Machuca</h3>
+
+Brincar é gostoso.
+Humilhar não é jogo.
+Zoar cicatriz emocional, expor vulnerabilidade, dar patada disfarçada de piada tudo isso afasta.
+
+Como corrigir:
+→ Leia o riso do outro. Se parou de rir, pare também.
+→ Um “foi pesado, né?” seguido de “Relaxa, eu gosto de você de verdade” salva a vibe.
+
+ <h3>Erro Clássico 3: Frieza 100% do Tempo </h3>
+
+O Badboy que nunca mostra nada é só um muro entediante.
+Gelo puro não derrete ninguém repele.
+Sem calor, sem contraste sem tesão.
+
+Como corrigir:
+→ Dê picos de presença genuína. Surpreenda com verdade.
+→ Mostre que por trás da pose existe carne, desejo, curiosidade.
+→ Suma, mas volte e quando voltar, seja inteiro.
+
+ <h3>Erro Clássico 4: Usar o Paradigma pra Manipular</h3>
+
+Sumir pra punir.
+Provocar pra ferir.
+Voltar só pra sugar.
+Isso não é Badboy é narcisismo barato.
+Aqui não é manual de sociopata.
+
+Como corrigir:
+→ Seja honesto. Some por você não pra castigar.
+→ Volte porque quer não pra ver o outro rastejar.
+→ Provocar é brincadeira mútua, não vingança.
+
+ <h3>Roteiro de Conserto</h3>
+
+Quando perceber que virou babaca:
+1.Admita sem drama.
+2.Provoque de leve.
+3.Volte ao jogo com humor.
+
+ <h3>Moral: O charme é equilíbrio</h3>
+
+Todo Badboy precisa lembrar:
+Sumiço sem volta é covardia.
+Ironia sem graça é grosseria.
+Frieza total é vazio.
+Charme é saber brincar e saber parar.`,
+  `<h2>Capítulo 8</h2>
+  <h3>O Paradigma Na Prática</h3>
+  Teoria seduz na mente. Mensagem bem enviada faz dormir pensando.
+
+Saber sumir, saber provocar, saber reaparecer tudo isso se treina no detalhe.
+É palavra curta, corte seco, volta inesperada.
+O carente manda texto de testamento.
+O Badboy manda uma frase que fere e beija junto.
+
+  <h4>1.Entrando no Jogo</h4>
+
+Primeiro contato:
+Nada de “Oi linda, tudo bem?” genérico.
+Ele já ouviu isso mil vezes.
+
+Vem torto, vem curto, vem com veneno leve.
+
+1.“Avisa quando cansar de ser interessante, que aí eu paro de olhar.”
+
+2.“Vai, faz cara de brava pra ver se eu corro.”
+
+ <h4>2.Sumindo com Estilo</h4>
+
+Quando parar de responder?
+Na alta. Quando o assunto tá bom, o riso tá solto.
+
+1."Somei de propósito. Tava te dando férias de mim. Já deu, né?”
+
+2.“Depois reclama que eu sumo mas fala a verdade, fica melhor assim.”
+
+ <h4>3.Voltando do Sumiço</h4>
+
+Voltar é arte: nem pedindo desculpa, nem fingindo que nada aconteceu.
+Volta com provocação ou humor.
+
+1.“Abri 10 abas de conversa, mas tu ainda é a mais divertida.”
+
+2.“Lembrei de ti, não espalha.”
+
+<h4>4.Mantendo o Mistério</h4>
+
+Fala menos, deixa dúvida.
+
+1.“Se eu te contar tudo agora, perco a graça amanhã.”
+
+2.“Nem tudo que eu falo é verdade. Sorte sua tentar descobrir.”
+
+<h4>5.Brincando com Frio e Calor</h4>
+
+No meio do papo, cutuca mas entrega verdade junto.
+
+1.“Não te suporto mas gosto da tua voz.”
+
+2.“Você merece alguém que não suma. Pena que eu não presto.”
+
+ <h4>6.Fechando com chave de ouro</h4>
+
+Quando sentir que tá tudo morno corta.
+
+1.“Tá ficando bonzinho demais. Vou sumir pra te deixar brava de novo.”
+
+Ou fecha uma noite inteira com frase que deixa na cabeça:
+
+2.“Vai dormir pensando que amanhã eu volto. Ou não.”
+
+ <h3>Paradigma é prática</h3>
+
+Não existe frase mágica.
+Existe postura por trás da frase.
+É saber que cada sumiço tem retorno, cada provocação tem colo, cada ausência é convite pra presença valer.
+
+No fim, quem entende o jogo não implora pra ser lembrado é lembrado porque faz falta.`,
+ `<h2>Capítulo 9</h2>
+ <h3>O Limite Ético</h3>
+ Sumir pra provocar é uma coisa. Sumir pra ferir é covardia.
+
+Existe uma linha tênue entre ser ausência que vicia e virar fantasma que machuca.
+Existe uma diferença entre provocar pra criar fogo e brincar com fogo emocional de quem não sabe jogar.
+
+ <h3>O Badboy não é manipulador</h3>
+
+Ele não faz chantagem emocional.
+Não some pra castigar.
+Não volta pra sugar.
+Ele sabe que o charme dele não tá em esmagar o outro tá em não mendigar pra ficar.
+
+ <h3>Regra de Ouro: Clareza</h3>
+
+O Badboy verdadeiro é honesto na postura.
+Ele provoca, mas deixa claro: é jogo, não promessa vazia.
+Ele some, mas não planta esperança falsa pra alguém viver preso.
+
+Ele não promete namoro pra depois desaparecer.
+Não alimenta quem tá vulnerável só pra inflar ego.
+Não vira assunto de terapia de quem confiou de verdade.
+
+ <h3>Quando parar</h3>
+
+Se a pessoa deixa claro que não entende o jogo — pare.
+Se a outra parte se mostra frágil pare.
+Se a brincadeira virou dor suma de verdade.
+
+O Paradigma é charme, não abuso.
+É liberdade, não controle.
+
+ <h3>Como agir com ética</h3>
+
+ <h4>1. Deixe o script claro.</h4>
+Não prometa o que não entrega.
+Se quer só vibe, não finja eternidade.
+
+ <h4>2. Some sem humilhar.</h4>
+Não corte o outro com frase cruel suma em silêncio ou com humor leve.
+
+ <h4>3. Volte se fizer sentido.</h4>
+Não reabra porta pra sugar. Reabra pra trocar.
+
+ <h4>4. Se errar, admita.</h4>
+Errou a mão? Pisou demais? Admita, peça desculpa, suma de vez se for melhor.
+
+ <h3>No fim, o Paradigma é Autonomia</h3>
+
+O Badboy real não precisa de plateia dependente.
+Ele não quer estrago quer memória boa.
+Quer que falem dele com sorriso torto, não com lágrima engasgada.
+
+Charme é liberdade.
+Sumir é limite.
+Voltar é escolha.
+
+Faz falta quem sabe sair mas sabe voltar limpo.`,
+ `<h2>Epílogo</h2>
+ <h3>A Última Máscara</h3>
+ No fim, todo Badboy tem medo de ser visto demais.
+
+Por trás do sumiço tem receio de grudar.
+Por trás da provocação tem medo de ser previsível.
+Por trás do mistério tem vontade de ser decifrado mas não por qualquer um.
+
+O Paradigma do Badboy nunca foi receita pra virar idiota.
+É só o jeito de não se perder.
+De não mendigar afeto barato.
+De não virar marionete de quem nunca valeu o palco.
+
+É a arte de fazer falta porque você não se oferece de graça.
+De marcar presença sem prometer eternidade.
+De aparecer inteiro e sumir antes de virar enfeite.
+
+No fim, se alguém perguntar “é só jogo?”, a resposta é simples:
+Não é jogo é fronteira.
+Não é crueldade é charme na medida.
+Não é prisão é liberdade que seduz porque não prende.
+
+Talvez um dia você queime a jaqueta, apague o cigarro, esqueça o sumiço.
+Talvez ame alguém ao ponto de querer ser visto inteiro.
+E tudo bem.
+Mas até lá sumir vai ser teu superpoder.
+
+E quem reclamar do vazio que você deixa é porque no fundo gostou de se perder lá dentro.`
+   ]
+  }
+ };
+    const modal = document.getElementById('modal');
+    const openBookBtn = document.getElementById('openBook');
+    const closeModalBtn = document.getElementById('closeModal');
+    const bookContainer = document.getElementById('bookContainer');
+    const book = document.getElementById('book');
+    const closeBookBtn = document.getElementById('closeBook');
+    const thumbs = document.querySelectorAll('.thumb');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+
+    let pages = null;
+    let current = 0;
+    let activeBook = null;
+
+    thumbs.forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        activeBook = parseInt(thumb.getAttribute('data-id'));
+        modalTitle.innerText = books[activeBook].title;
+        modalDesc.innerText = books[activeBook].desc;
+        modal.style.display = 'flex';
+      });
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    openBookBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+      bookContainer.style.display = 'flex';
+      book.innerHTML = `
+        <div class="page capa"><img src="${books[activeBook].cover}" alt="Capa"></div>
+        ${books[activeBook].pages.map(p => `<div class="page">${p}</div>`).join('')}
+      `;
+      pages = book.querySelectorAll('.page');
+      current = 0;
+      pages.forEach((p, i) => {
+        p.style.zIndex = pages.length - i;
+        p.classList.remove('flipped');
+      });
+    });
+
+    book.addEventListener('click', (e) => {
+      const rect = book.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+
+      if (clickX > rect.width / 2) {
+        if (current < pages.length) {
+          pages[current].classList.add('flipped');
+          current++;
+        }
+      } else {
+        if (current > 0) {
+          current--;
+          pages[current].classList.remove('flipped');
+        }
+      }
+    });
+
+    closeBookBtn.addEventListener('click', () => {
+      bookContainer.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
